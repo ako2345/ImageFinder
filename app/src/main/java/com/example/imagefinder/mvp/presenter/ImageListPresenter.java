@@ -1,14 +1,14 @@
 package com.example.imagefinder.mvp.presenter;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.example.imagefinder.R;
-import com.example.imagefinder.Settings;
-import com.example.imagefinder.app.GoogleCustomSearchApi;
+import com.example.imagefinder.app.BingSearchApi;
 import com.example.imagefinder.mvp.model.ImageInfo;
-import com.example.imagefinder.mvp.model.gson.GResults;
+import com.example.imagefinder.mvp.model.gson.BingSearchResults;
 import com.example.imagefinder.mvp.view.ImageListView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
