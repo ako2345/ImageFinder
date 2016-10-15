@@ -16,6 +16,7 @@ import android.widget.EditText;
 import com.arellomobile.mvp.MvpAppCompatActivity;
 import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.example.imagefinder.R;
+import com.example.imagefinder.mvp.model.ImageInfo;
 import com.example.imagefinder.mvp.presenter.ImageListPresenter;
 import com.example.imagefinder.mvp.view.ImageListView;
 
@@ -126,7 +127,7 @@ public class ImageListActivity extends MvpAppCompatActivity implements ImageList
     }
 
     @Override
-    public void showResults(List<String> imageUriList) {
-        adapter.setImageUriList(imageUriList);
+    public void showResults(List<ImageInfo> imageInfoList) {
+        adapter.setImageInfoList(imageInfoList);
     }
 }

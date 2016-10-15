@@ -6,6 +6,7 @@ import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.example.imagefinder.R;
 import com.example.imagefinder.Settings;
+import com.example.imagefinder.mvp.model.ImageInfo;
 import com.example.imagefinder.mvp.view.ImageListView;
 
 import org.jsoup.Jsoup;
@@ -20,7 +21,7 @@ import java.util.List;
 @InjectViewState
 public class ImageListPresenter extends MvpPresenter<ImageListView> {
 
-    List<String> uriList;
+    List<ImageInfo> imageInfoList;
     String keyword;
 
     public void onKeywordChanged(CharSequence text) {
@@ -33,14 +34,14 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
         getViewState().showProgress();
         getViewState().hideError();
 
-        if (uriList != null && keyword.equals(this.keyword)) {
+        if (imageInfoList != null && keyword.equals(this.keyword)) {
             getViewState().hideProgress();
-            getViewState().showResults(uriList);
+            getViewState().showResults(imageInfoList);
         } else {
-            final String url = Settings.URL + keyword;
-            new AsyncTask<String, Void, List<String>>() {
+            final String url = Settings.SEARCH_URL_PREFIX + keyword;
+            new AsyncTask<String, Void, List<ImageInfo>>() {
                 @Override
-                protected List<String> doInBackground(String... params) {
+                protected List<ImageInfo> doInBackground(String... params) {
                     try {
                         Document doc = Jsoup
                                 .connect(params[0])
@@ -52,11 +53,17 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
                         Elements images = results.select("img");
                         // get image URIs
                         if (!images.isEmpty()) {
-                            List<String> imageUriList = new ArrayList<>();
+                            List<ImageInfo> imageInfoArrayList = new ArrayList<>(images.size());
                             for (Element image : images) {
-                                imageUriList.add(image.attr("src"));
+                                final String imageUri = image.attr("src");
+                                final Element parent = image.parent();
+                                final String pageUri = parent.attr("href").split("&")[0].split("q=")[1];
+                                if (imageUri.length() > 0) {
+                                    final ImageInfo imageInfo = new ImageInfo(imageUri, pageUri);
+                                    imageInfoArrayList.add(imageInfo);
+                                }
                             }
-                            return imageUriList;
+                            return imageInfoArrayList;
                         } else {
                             return null;
                         }
@@ -66,12 +73,12 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
                 }
 
                 @Override
-                protected void onPostExecute(List<String> imageUriList) {
-                    if (imageUriList != null) {
-                        uriList = imageUriList;
+                protected void onPostExecute(List<ImageInfo> imageInfoList) {
+                    if (imageInfoList != null) {
+                        ImageListPresenter.this.imageInfoList = imageInfoList;
                         ImageListPresenter.this.keyword = keyword;
                         getViewState().hideProgress();
-                        getViewState().showResults(imageUriList);
+                        getViewState().showResults(imageInfoList);
                     } else {
                         getViewState().hideProgress();
                         getViewState().showError(R.string.error);

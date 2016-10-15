@@ -5,6 +5,7 @@ import android.support.annotation.StringRes;
 import com.arellomobile.mvp.MvpView;
 import com.arellomobile.mvp.viewstate.strategy.AddToEndSingleStrategy;
 import com.arellomobile.mvp.viewstate.strategy.StateStrategyType;
+import com.example.imagefinder.mvp.model.ImageInfo;
 
 import java.util.List;
 
@@ -23,6 +24,6 @@ public interface ImageListView extends MvpView {
 
     void hideError();
 
-    void showResults(List<String> imageUriList);
+    void showResults(List<ImageInfo> imageInfoList);
 
 }

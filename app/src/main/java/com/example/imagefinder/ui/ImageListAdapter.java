@@ -9,21 +9,22 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.imagefinder.R;
+import com.example.imagefinder.mvp.model.ImageInfo;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder> {
-    private List<String> imageUriList = new ArrayList<>();
+class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder> {
+    private List<ImageInfo> imageInfoList = new ArrayList<>();
     private final Picasso picasso;
 
-    public ImageListAdapter(Context context) {
+    ImageListAdapter(Context context) {
         this.picasso = Picasso.with(context);
     }
 
-    public void setImageUriList(List<String> imageUriList) {
-        this.imageUriList = imageUriList;
+    void setImageInfoList(List<ImageInfo> imageInfoList) {
+        this.imageInfoList = imageInfoList;
         notifyDataSetChanged();
     }
 
@@ -35,22 +36,24 @@ public class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.View
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String imageUri = imageUriList.get(position);
-        holder.title.setText(imageUri);
+        ImageInfo imageInfo = imageInfoList.get(position);
+        String imageUri = imageInfo.imageUri;
+        String pageUri = imageInfo.pageUri;
+        holder.title.setText(pageUri);
         picasso.load(imageUri).into(holder.image);
     }
 
     @Override
     public int getItemCount() {
-        return imageUriList.size();
+        return imageInfoList.size();
     }
 
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
         final TextView title;
         final ImageView image;
 
-        public ViewHolder(View view) {
+        ViewHolder(View view) {
             super(view);
             title = (TextView) view.findViewById(R.id.title);
             image = (ImageView) view.findViewById(R.id.image);
