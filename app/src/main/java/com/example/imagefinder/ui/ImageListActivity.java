@@ -81,6 +81,15 @@ public class ImageListActivity extends MvpAppCompatActivity implements ImageList
     }
 
     @Override
+    public void hideKeyboard() {
+        final View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
+    @Override
     public void showProgress() {
         if (progressBar != null) {
             progressBar.setVisibility(View.VISIBLE);
@@ -118,15 +127,6 @@ public class ImageListActivity extends MvpAppCompatActivity implements ImageList
 
     @Override
     public void showResults(List<String> imageUriList) {
-        hideKeyboard();
         adapter.setImageUriList(imageUriList);
-    }
-
-    private void hideKeyboard() {
-        final View view = this.getCurrentFocus();
-        if (view != null) {
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
     }
 }

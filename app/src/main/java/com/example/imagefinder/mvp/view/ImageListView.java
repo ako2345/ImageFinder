@@ -13,6 +13,8 @@ public interface ImageListView extends MvpView {
 
     void setSearchEnabled(boolean enabled);
 
+    void hideKeyboard();
+
     void showProgress();
 
     void hideProgress();
@@ -22,4 +24,5 @@ public interface ImageListView extends MvpView {
     void hideError();
 
     void showResults(List<String> imageUriList);
+
 }
