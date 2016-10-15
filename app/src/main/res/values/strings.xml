@@ -4,6 +4,9 @@
     <string name="hint">Type keyword</string>
     <string name="search">Search</string>
     <string name="ok">OK</string>
+
     <string name="error">Error</string>
+    <string name="error_nothing_found">Nothing found</string>
+
     <string name="image">Image</string>
 </resources>

@@ -16,14 +16,36 @@
         android:layout_marginRight="8dp"
         android:adjustViewBounds="true"
         android:contentDescription="@string/image"
+        android:minHeight="48dp"
+        android:minWidth="48dp"
         tools:src="@mipmap/ic_launcher" />
 
-    <TextView
-        android:id="@+id/title"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:textSize="12sp"
-        tools:text="@string/app_name" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/pageLink"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@android:color/black"
+            android:textSize="12sp"
+            tools:text="https://sites.google.com/site/aubreymkellyphd/tea-time-supporting-women-in-science" />
+
+        <TextView
+            android:id="@+id/dimensions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:textColor="#999"
+            android:textSize="12sp"
+            tools:text="800 x 600" />
+
+    </LinearLayout>
+
 
 </LinearLayout>

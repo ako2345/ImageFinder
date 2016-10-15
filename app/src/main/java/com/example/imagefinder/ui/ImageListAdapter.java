@@ -14,6 +14,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder> {
     private List<ImageInfo> imageInfoList = new ArrayList<>();
@@ -36,10 +37,12 @@ class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder>
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        ImageInfo imageInfo = imageInfoList.get(position);
-        String imageUri = imageInfo.imageUri;
-        String pageUri = imageInfo.pageUri;
-        holder.title.setText(pageUri);
+        final ImageInfo imageInfo = imageInfoList.get(position);
+        final String imageUri = imageInfo.thumbnailLink;
+        final String pageUri = imageInfo.contextLink;
+        final String dimensions = String.format(Locale.getDefault(), "%d x %d", imageInfo.width, imageInfo.height);
+        holder.pageUri.setText(pageUri);
+        holder.dimensions.setText(dimensions);
         picasso.load(imageUri).into(holder.image);
     }
 
@@ -50,12 +53,14 @@ class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder>
 
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        final TextView title;
+        final TextView pageUri;
+        final TextView dimensions;
         final ImageView image;
 
         ViewHolder(View view) {
             super(view);
-            title = (TextView) view.findViewById(R.id.title);
+            pageUri = (TextView) view.findViewById(R.id.pageLink);
+            dimensions = (TextView) view.findViewById(R.id.dimensions);
             image = (ImageView) view.findViewById(R.id.image);
         }
     }

@@ -1,28 +1,39 @@
 package com.example.imagefinder.mvp.presenter;
 
-import android.os.AsyncTask;
+import android.support.annotation.Nullable;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.example.imagefinder.R;
 import com.example.imagefinder.Settings;
+import com.example.imagefinder.app.GoogleCustomSearchApi;
 import com.example.imagefinder.mvp.model.ImageInfo;
+import com.example.imagefinder.mvp.model.gson.GResults;
 import com.example.imagefinder.mvp.view.ImageListView;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 @InjectViewState
 public class ImageListPresenter extends MvpPresenter<ImageListView> {
 
+    @Nullable
     List<ImageInfo> imageInfoList;
+    @Nullable
     String keyword;
+    private final Gson gson = new GsonBuilder().create();
+    private final Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl(Settings.GOOGLE_CSE_URI)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build();
 
     public void onKeywordChanged(CharSequence text) {
         final boolean searchEnabled = text != null && text.length() > 0;
@@ -38,53 +49,51 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
             getViewState().hideProgress();
             getViewState().showResults(imageInfoList);
         } else {
-            final String url = Settings.SEARCH_URL_PREFIX + keyword;
-            new AsyncTask<String, Void, List<ImageInfo>>() {
+            GoogleCustomSearchApi customSearchService = retrofit.create(GoogleCustomSearchApi.class);
+            Call<GResults> searchCall = customSearchService.searchImages(
+                    keyword,
+                    Settings.GOOGLE_CSE_API_KEY,
+                    Settings.GOOGLE_CSE_PROJECT_ID
+            );
+            searchCall.enqueue(new Callback<GResults>() {
                 @Override
-                protected List<ImageInfo> doInBackground(String... params) {
-                    try {
-                        Document doc = Jsoup
-                                .connect(params[0])
-                                .maxBodySize(0)
-                                .get();
-                        // get div with results (its id is "res")
-                        Elements results = doc.select("#res");
-                        // get image tags
-                        Elements images = results.select("img");
-                        // get image URIs
-                        if (!images.isEmpty()) {
-                            List<ImageInfo> imageInfoArrayList = new ArrayList<>(images.size());
-                            for (Element image : images) {
-                                final String imageUri = image.attr("src");
-                                final Element parent = image.parent();
-                                final String pageUri = parent.attr("href").split("&")[0].split("q=")[1];
-                                if (imageUri.length() > 0) {
-                                    final ImageInfo imageInfo = new ImageInfo(imageUri, pageUri);
-                                    imageInfoArrayList.add(imageInfo);
-                                }
-                            }
-                            return imageInfoArrayList;
-                        } else {
-                            return null;
-                        }
-                    } catch (IOException e) {
-                        return null;
-                    }
-                }
+                public void onResponse(Call<GResults> call, Response<GResults> response) {
+                    GResults responseBody = response.body();
 
-                @Override
-                protected void onPostExecute(List<ImageInfo> imageInfoList) {
-                    if (imageInfoList != null) {
+                    final int searchResultsSize = responseBody.items != null ? responseBody.items.size() : 0;
+                    if (searchResultsSize > 0) {
+                        // create image info list
+                        List<ImageInfo> imageInfoList = new ArrayList<>(responseBody.items.size());
+                        for (GResults.Item item : responseBody.items) {
+                            final GResults.Item.Image image = item.image;
+                            final ImageInfo imageInfo = new ImageInfo(
+                                    image.thumbnailLink,
+                                    image.contextLink,
+                                    image.width,
+                                    image.height
+                            );
+                            imageInfoList.add(imageInfo);
+                        }
+
+                        // update cached values
                         ImageListPresenter.this.imageInfoList = imageInfoList;
                         ImageListPresenter.this.keyword = keyword;
+
+                        // update view
                         getViewState().hideProgress();
                         getViewState().showResults(imageInfoList);
                     } else {
                         getViewState().hideProgress();
-                        getViewState().showError(R.string.error);
+                        getViewState().showError(R.string.error_nothing_found);
                     }
                 }
-            }.execute(url);
+
+                @Override
+                public void onFailure(Call<GResults> call, Throwable t) {
+                    getViewState().hideProgress();
+                    getViewState().showError(R.string.error);
+                }
+            });
         }
     }
 }
