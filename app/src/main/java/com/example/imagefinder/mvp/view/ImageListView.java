@@ -10,6 +10,9 @@ import java.util.List;
 
 @StateStrategyType(AddToEndSingleStrategy.class)
 public interface ImageListView extends MvpView {
+
+    void setSearchEnabled(boolean enabled);
+
     void showProgress();
 
     void hideProgress();

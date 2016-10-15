@@ -10,7 +10,7 @@ import com.example.imagefinder.R;
 
 public class ErrorDialogFragment extends DialogFragment {
 
-    public static final String ARG_ERROR_MESSAGE = "args_error";
+    private static final String ARG_ERROR_MESSAGE = "args_error";
 
     public static ErrorDialogFragment newInstance(String errorMessage) {
         ErrorDialogFragment fragment = new ErrorDialogFragment();

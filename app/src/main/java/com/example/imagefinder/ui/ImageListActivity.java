@@ -1,18 +1,21 @@
 package com.example.imagefinder.ui;
 
+import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
 
 import com.arellomobile.mvp.MvpAppCompatActivity;
 import com.arellomobile.mvp.presenter.InjectPresenter;
 import com.example.imagefinder.R;
-import com.example.imagefinder.Settings;
 import com.example.imagefinder.mvp.presenter.ImageListPresenter;
 import com.example.imagefinder.mvp.view.ImageListView;
 
@@ -25,10 +28,9 @@ public class ImageListActivity extends MvpAppCompatActivity implements ImageList
 
     RecyclerView recyclerView;
 
-    @Nullable
-    View progressBar;
-
-    private final Handler handler = new Handler();
+    private View progressBar;
+    EditText keywordEditText;
+    Button searchButton;
     private ImageListAdapter adapter;
 
     @Override
@@ -38,16 +40,44 @@ public class ImageListActivity extends MvpAppCompatActivity implements ImageList
 
         // Init views
         progressBar = findViewById(R.id.progress_bar);
+        keywordEditText = (EditText) findViewById(R.id.keyword);
+        searchButton = (Button) findViewById(R.id.start_search);
         recyclerView = (RecyclerView) findViewById(R.id.list);
+
+        // setup edit text
+        keywordEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                presenter.onKeywordChanged(charSequence);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
+
+        // setup search button
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                presenter.searchImages(keywordEditText.getText().toString());
+            }
+        });
 
         // setup recycler view
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         adapter = new ImageListAdapter(this);
         recyclerView.setAdapter(adapter);
+    }
 
-        // load image URIs
-        presenter.loadPage(Settings.KEYWORD);
+    @Override
+    public void setSearchEnabled(boolean enabled) {
+        searchButton.setEnabled(enabled);
     }
 
     @Override
@@ -88,6 +118,15 @@ public class ImageListActivity extends MvpAppCompatActivity implements ImageList
 
     @Override
     public void showResults(List<String> imageUriList) {
+        hideKeyboard();
         adapter.setImageUriList(imageUriList);
+    }
+
+    private void hideKeyboard() {
+        final View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }

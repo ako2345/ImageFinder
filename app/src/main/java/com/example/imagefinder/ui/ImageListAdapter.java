@@ -16,7 +16,7 @@ import java.util.List;
 
 public class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder> {
     private List<String> imageUriList = new ArrayList<>();
-    private Picasso picasso;
+    private final Picasso picasso;
 
     public ImageListAdapter(Context context) {
         this.picasso = Picasso.with(context);
@@ -47,9 +47,8 @@ public class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.View
 
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        TextView title;
-
-        ImageView image;
+        final TextView title;
+        final ImageView image;
 
         public ViewHolder(View view) {
             super(view);

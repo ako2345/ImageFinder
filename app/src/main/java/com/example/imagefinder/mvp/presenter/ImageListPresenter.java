@@ -23,7 +23,12 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
     List<String> uriList;
     String keyword;
 
-    public void loadPage(final String keyword) {
+    public void onKeywordChanged(CharSequence text) {
+        final boolean searchEnabled = text != null && text.length() > 0;
+        getViewState().setSearchEnabled(searchEnabled);
+    }
+
+    public void searchImages(final String keyword) {
         getViewState().showProgress();
         getViewState().hideError();
 
