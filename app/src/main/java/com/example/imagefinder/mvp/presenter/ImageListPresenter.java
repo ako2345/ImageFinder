@@ -29,9 +29,11 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
     List<ImageInfo> imageInfoList;
     @Nullable
     String keyword;
+    @NonNull
     private final Gson gson = new GsonBuilder().create();
+    @NonNull
     private final Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl(Settings.GOOGLE_CSE_URI)
+            .baseUrl(BingSearchApi.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build();
 
@@ -49,26 +51,25 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
             getViewState().hideProgress();
             getViewState().showResults(imageInfoList);
         } else {
-            GoogleCustomSearchApi customSearchService = retrofit.create(GoogleCustomSearchApi.class);
-            Call<GResults> searchCall = customSearchService.searchImages(
-                    keyword,
-                    Settings.GOOGLE_CSE_API_KEY,
-                    Settings.GOOGLE_CSE_PROJECT_ID
-            );
-            searchCall.enqueue(new Callback<GResults>() {
+            BingSearchApi customSearchService = retrofit.create(BingSearchApi.class);
+            Call<BingSearchResults> searchCall = customSearchService.searchImages(keyword, 30, 0);
+            searchCall.enqueue(new Callback<BingSearchResults>() {
                 @Override
-                public void onResponse(Call<GResults> call, Response<GResults> response) {
-                    GResults responseBody = response.body();
-
-                    final int searchResultsSize = responseBody.items != null ? responseBody.items.size() : 0;
-                    if (searchResultsSize > 0) {
+                public void onResponse(Call<BingSearchResults> call, Response<BingSearchResults> response) {
+                    final BingSearchResults searchResults = response.body();
+                    final List<BingSearchResults.Image> imageList = searchResults != null ? searchResults.value : null;
+                    final int imagesCount = imageList != null ? imageList.size() : 0;
+                    if (imagesCount == 0) {
+                        ImageListPresenter.this.imageInfoList = null;
+                        getViewState().hideProgress();
+                        getViewState().showError(R.string.error_nothing_found);
+                    } else {
                         // create image info list
-                        List<ImageInfo> imageInfoList = new ArrayList<>(responseBody.items.size());
-                        for (GResults.Item item : responseBody.items) {
-                            final GResults.Item.Image image = item.image;
+                        final List<ImageInfo> imageInfoList = new ArrayList<>(imagesCount);
+                        for (BingSearchResults.Image image : imageList) {
                             final ImageInfo imageInfo = new ImageInfo(
-                                    image.thumbnailLink,
-                                    image.contextLink,
+                                    image.thumbnailUrl,
+                                    image.hostPageUrl,
                                     image.width,
                                     image.height
                             );
@@ -79,17 +80,14 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
                         ImageListPresenter.this.imageInfoList = imageInfoList;
                         ImageListPresenter.this.keyword = keyword;
 
-                        // update view
+                        // update view state
                         getViewState().hideProgress();
                         getViewState().showResults(imageInfoList);
-                    } else {
-                        getViewState().hideProgress();
-                        getViewState().showError(R.string.error_nothing_found);
                     }
                 }
 
                 @Override
-                public void onFailure(Call<GResults> call, Throwable t) {
+                public void onFailure(Call<BingSearchResults> call, Throwable t) {
                     getViewState().hideProgress();
                     getViewState().showError(R.string.error);
                 }
