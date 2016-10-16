@@ -86,7 +86,9 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
                                 image.thumbnailUrl,
                                 image.hostPageDisplayUrl,
                                 image.width,
-                                image.height
+                                image.height,
+                                image.thumbnail.width,
+                                image.thumbnail.height
                         );
                         imageInfoList.add(imageInfo);
                     }

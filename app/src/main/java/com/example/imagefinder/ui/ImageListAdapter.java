@@ -43,6 +43,8 @@ class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder>
         final String dimensions = String.format(Locale.getDefault(), "%d x %d", imageInfo.width, imageInfo.height);
         holder.pageUri.setText(pageUri);
         holder.dimensions.setText(dimensions);
+        holder.image.getLayoutParams().width = imageInfo.thumbnailWidth;
+        holder.image.getLayoutParams().height = imageInfo.thumbnailHeight;
         picasso.load(imageUri).into(holder.image);
     }
 

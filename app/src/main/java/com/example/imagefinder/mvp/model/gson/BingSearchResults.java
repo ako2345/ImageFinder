@@ -10,5 +10,11 @@ public class BingSearchResults {
         public String hostPageDisplayUrl;
         public int width;
         public int height;
+        public Thumbnail thumbnail;
+
+        public class Thumbnail {
+            public int width;
+            public int height;
+        }
     }
 }
