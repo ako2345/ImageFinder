@@ -7,7 +7,7 @@ public class BingSearchResults {
 
     public class Image {
         public String thumbnailUrl;
-        public String hostPageUrl;
+        public String hostPageDisplayUrl;
         public int width;
         public int height;
     }

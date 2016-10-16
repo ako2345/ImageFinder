@@ -23,16 +23,25 @@ import com.example.imagefinder.mvp.view.ImageListView;
 import java.util.List;
 
 public class ImageListActivity extends MvpAppCompatActivity implements ImageListView {
+    // constants
+    private static final int LIST_VISIBLE_THRESHOLD = 7;
 
     @InjectPresenter
     ImageListPresenter presenter;
 
-    RecyclerView recyclerView;
-
-    private View progressBar;
-    EditText keywordEditText;
-    Button searchButton;
+    // images list
+    private RecyclerView recyclerView;
     private ImageListAdapter adapter;
+
+    // list state
+    boolean loading = true;
+    int previousTotal = 0;
+    int firstVisibleItem, visibleItemCount, totalItemCount;
+
+    // views
+    private View progressBar;
+    private Button searchButton;
+    EditText keywordEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +74,7 @@ public class ImageListActivity extends MvpAppCompatActivity implements ImageList
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                presenter.searchImages(keywordEditText.getText().toString());
+                presenter.loadImages(keywordEditText.getText().toString(), true);
             }
         });
 
@@ -74,6 +83,25 @@ public class ImageListActivity extends MvpAppCompatActivity implements ImageList
         recyclerView.setLayoutManager(layoutManager);
         adapter = new ImageListAdapter(this);
         recyclerView.setAdapter(adapter);
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                visibleItemCount = recyclerView.getChildCount();
+                totalItemCount = layoutManager.getItemCount();
+                firstVisibleItem = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+                if (loading) {
+                    if (totalItemCount > previousTotal) {
+                        loading = false;
+                        previousTotal = totalItemCount;
+                    }
+                } else if ((totalItemCount - visibleItemCount) <= (firstVisibleItem + LIST_VISIBLE_THRESHOLD)) {
+                    presenter.loadImages(keywordEditText.getText().toString(), false);
+                    loading = true;
+                }
+            }
+        });
     }
 
     @Override
