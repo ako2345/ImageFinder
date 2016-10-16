@@ -74,14 +74,19 @@ public class ImageListActivity extends MvpAppCompatActivity implements ImageList
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                presenter.loadImages(keywordEditText.getText().toString(), true);
+                presenter.loadImagesByKeyword(keywordEditText.getText().toString(), true);
             }
         });
 
         // setup recycler view
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        adapter = new ImageListAdapter(this);
+        adapter = new ImageListAdapter(this, new ImageListAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClicked(int position) {
+                presenter.loadImagesFromPage(position);
+            }
+        });
         recyclerView.setAdapter(adapter);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -97,7 +102,7 @@ public class ImageListActivity extends MvpAppCompatActivity implements ImageList
                         previousTotal = totalItemCount;
                     }
                 } else if ((totalItemCount - visibleItemCount) <= (firstVisibleItem + LIST_VISIBLE_THRESHOLD)) {
-                    presenter.loadImages(keywordEditText.getText().toString(), false);
+                    presenter.loadImagesByKeyword(keywordEditText.getText().toString(), false);
                     loading = true;
                 }
             }

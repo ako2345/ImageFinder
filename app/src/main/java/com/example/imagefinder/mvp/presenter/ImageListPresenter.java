@@ -1,6 +1,9 @@
 package com.example.imagefinder.mvp.presenter;
 
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
+import android.util.Patterns;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
@@ -12,6 +15,12 @@ import com.example.imagefinder.mvp.view.ImageListView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +55,7 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
         getViewState().setSearchEnabled(searchEnabled);
     }
 
-    public void loadImages(final String keyword, final boolean isFirstSearch) {
+    public void loadImagesByKeyword(final String keyword, final boolean isFirstSearch) {
         // show progress bar
         getViewState().hideKeyboard();
         getViewState().showProgress();
@@ -104,5 +113,60 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
                 getViewState().showError(R.string.error);
             }
         });
+    }
+
+    public void loadImagesFromPage(final int position) {
+        getViewState().showProgress();
+
+        String hostPageUrl = imageInfoList.get(position).contextLink;
+        String excludedImageUrl = imageInfoList.get(position).thumbnailLink;
+        new AsyncTask<String, Void, List<String>>() {
+            @Override
+            protected List<String> doInBackground(String... strings) {
+                final String hostPageUrl = strings[0];
+                final String excludedImageUrl = strings[1];
+                final String uriString = hostPageUrl.startsWith("http") ? hostPageUrl : "http://" + hostPageUrl;
+                final Uri uri = Uri.parse(uriString);
+                try {
+                    final Document doc = Jsoup.connect(uri.toString()).get();
+                    final Elements images = doc.select("img");
+                    List<String> results = new ArrayList<>(images.size());
+                    for (Element image : images) {
+                        if (image.attr("width").isEmpty() || image.attr("height").isEmpty()) {
+                            continue;
+                        }
+                        final int width = Integer.parseInt(image.attr("width"));
+                        final int height = Integer.parseInt(image.attr("height"));
+                        if (width > 32 && height > 32) {
+                            String imageUrl = image.attr("src");
+                            if (imageUrl.startsWith("/")) {
+                                imageUrl = uri.getScheme() + "://" + uri.getHost() + imageUrl;
+                            }
+                            if (!excludedImageUrl.equals(imageUrl) && Patterns.WEB_URL.matcher(imageUrl).matches()) {
+                                results.add(imageUrl);
+                            }
+                        }
+                    }
+                    return results;
+                } catch (IOException e) {
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(List<String> strings) {
+                getViewState().hideProgress();
+                if (strings == null) {
+                    getViewState().showError(R.string.error);
+                } else {
+                    if (strings.isEmpty()) {
+                        getViewState().showError(R.string.error_nothing_found);
+                    } else {
+                        imageInfoList.get(position).setAssociatedImagesList(strings);
+                        getViewState().showResults(imageInfoList);
+                    }
+                }
+            }
+        }.execute(hostPageUrl, excludedImageUrl);
     }
 }

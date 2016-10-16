@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.imagefinder.R;
@@ -17,11 +18,14 @@ import java.util.List;
 import java.util.Locale;
 
 class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder> {
-    private List<ImageInfo> imageInfoList = new ArrayList<>();
+    List<ImageInfo> imageInfoList = new ArrayList<>();
+    final OnItemClickListener listener;
     private final Picasso picasso;
 
-    ImageListAdapter(Context context) {
+    ImageListAdapter(Context context, OnItemClickListener listener) {
+
         this.picasso = Picasso.with(context);
+        this.listener = listener;
     }
 
     void setImageInfoList(List<ImageInfo> imageInfoList) {
@@ -46,6 +50,17 @@ class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder>
         holder.image.getLayoutParams().width = imageInfo.thumbnailWidth;
         holder.image.getLayoutParams().height = imageInfo.thumbnailHeight;
         picasso.load(imageUri).into(holder.image);
+        holder.associatedImages.removeAllViews();
+        if (imageInfo.associatedImagesList != null && !imageInfo.associatedImagesList.isEmpty()) {
+            for (String associatedImageUrl : imageInfo.associatedImagesList) {
+                ImageView imageView = new ImageView(holder.associatedImages.getContext());
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                lp.setMargins(0, 0, 0, 16);
+                imageView.setLayoutParams(lp);
+                picasso.load(associatedImageUrl).into(imageView);
+                holder.associatedImages.addView(imageView);
+            }
+        }
     }
 
     @Override
@@ -53,17 +68,28 @@ class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder>
         return imageInfoList.size();
     }
 
-
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         final TextView pageUri;
         final TextView dimensions;
         final ImageView image;
+        final ViewGroup associatedImages;
 
         ViewHolder(View view) {
             super(view);
             pageUri = (TextView) view.findViewById(R.id.pageLink);
             dimensions = (TextView) view.findViewById(R.id.dimensions);
             image = (ImageView) view.findViewById(R.id.image);
+            associatedImages = (ViewGroup) view.findViewById(R.id.associatedImages);
+            view.setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View view) {
+            listener.onItemClicked(getAdapterPosition());
+        }
+    }
+
+    interface OnItemClickListener {
+        void onItemClicked(int position);
     }
 }
