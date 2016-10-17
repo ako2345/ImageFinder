@@ -32,8 +32,6 @@ public class ImageListActivity extends MvpAppCompatActivity implements ImageList
     @InjectPresenter
     ImageListPresenter presenter;
 
-    // images list
-    private RecyclerView recyclerView;
     private ImageListAdapter adapter;
 
     // list state
@@ -55,7 +53,7 @@ public class ImageListActivity extends MvpAppCompatActivity implements ImageList
         progressBar = findViewById(R.id.progress_bar);
         keywordEditText = (EditText) findViewById(R.id.keyword);
         searchButton = (Button) findViewById(R.id.start_search);
-        recyclerView = (RecyclerView) findViewById(R.id.list);
+        final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.list);
 
         // setup edit text
         keywordEditText.addTextChangedListener(new TextWatcher() {
