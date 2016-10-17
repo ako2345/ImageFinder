@@ -82,7 +82,7 @@ public class ImageListActivity extends MvpAppCompatActivity implements ImageList
         // setup recycler view
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        adapter = new ImageListAdapter(this, new ImageListAdapter.OnItemClickListener() {
+        adapter = new ImageListAdapter(new ImageListAdapter.OnItemClickListener() {
             @Override
             public void onItemClicked(int position) {
                 presenter.loadImagesFromPage(position);

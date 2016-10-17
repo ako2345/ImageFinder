@@ -1,6 +1,5 @@
 package com.example.imagefinder.ui;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,10 +22,8 @@ import java.util.Locale;
 class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder> {
     List<ImageInfo> imageInfoList = new ArrayList<>();
     final OnItemClickListener listener;
-    private final Picasso picasso;
 
-    ImageListAdapter(Context context, OnItemClickListener listener) {
-        this.picasso = Picasso.with(context);
+    ImageListAdapter(OnItemClickListener listener) {
         this.listener = listener;
     }
 
@@ -58,7 +55,7 @@ class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder>
         holder.image.getLayoutParams().width = imageInfo.thumbnailWidth;
         holder.image.getLayoutParams().height = imageInfo.thumbnailHeight;
         final String imageUri = imageInfo.thumbnailLink;
-        picasso.load(imageUri).into(holder.image);
+        Picasso.with(holder.image.getContext()).load(imageUri).into(holder.image);
 
         // associated images
         holder.associatedImages.removeAllViews();
@@ -68,7 +65,7 @@ class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder>
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                 lp.setMargins(0, 0, 0, 16);
                 imageView.setLayoutParams(lp);
-                picasso.load(associatedImageUrl).into(imageView);
+                Picasso.with(holder.associatedImages.getContext()).load(associatedImageUrl).into(imageView);
                 holder.associatedImages.addView(imageView);
             }
         }
