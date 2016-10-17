@@ -10,6 +10,9 @@ import com.example.imagefinder.mvp.model.ImageInfo;
 
 import java.util.List;
 
+/**
+ * Interface for view.
+ */
 @StateStrategyType(AddToEndSingleStrategy.class)
 public interface ImageListView extends MvpView {
 

@@ -9,7 +9,7 @@ import android.util.Patterns;
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
 import com.example.imagefinder.R;
-import com.example.imagefinder.app.BingSearchApi;
+import com.example.imagefinder.api.BingSearchApi;
 import com.example.imagefinder.mvp.model.ImageInfo;
 import com.example.imagefinder.mvp.model.gson.BingSearchResults;
 import com.example.imagefinder.mvp.view.ImageListView;
@@ -32,6 +32,9 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+/**
+ * Presenter updates view and handles events from user.
+ */
 @InjectViewState
 public class ImageListPresenter extends MvpPresenter<ImageListView> {
     // constants
@@ -52,23 +55,35 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
             .build();
     private final BingSearchApi customSearchService = retrofit.create(BingSearchApi.class);
 
+    /**
+     * Notifies the presenter about new value of key word.
+     *
+     * @param text New value of key word.
+     */
     public void onKeywordChanged(CharSequence text) {
         final boolean searchEnabled = text != null && text.length() > 0;
         getViewState().setSearchEnabled(searchEnabled);
     }
 
+    /**
+     * Loads list of search results for the entered key word.
+     *
+     * @param keyword       Key word.
+     * @param isFirstSearch Flag that indicates if search for a key word is performed for the first time.
+     */
     public void loadImagesByKeyword(final String keyword, final boolean isFirstSearch) {
         // show progress bar
         getViewState().hideKeyboard();
         getViewState().showProgress();
 
-        // show cached results during the first search
         if (isFirstSearch) {
             if (keyword.equals(this.keyword)) {
+                // show cached search results during the first search
                 getViewState().hideProgress();
                 getViewState().showResults(imageInfoList);
                 return;
             } else {
+                // clear the list of search results
                 imageInfoList.clear();
             }
         }
@@ -88,10 +103,10 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
                         getViewState().showError(R.string.error_nothing_found);
                     }
                 } else {
-                    // update cached values
+                    // update cached key word
                     ImageListPresenter.this.keyword = keyword;
 
-                    // create image info list
+                    // create search results list
                     for (BingSearchResults.Image image : imageList) {
                         final ImageInfo imageInfo = new ImageInfo(
                                 image.thumbnailUrl,
@@ -111,12 +126,18 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
 
             @Override
             public void onFailure(Call<BingSearchResults> call, Throwable t) {
+                // show error
                 getViewState().hideProgress();
                 getViewState().showError(R.string.error);
             }
         });
     }
 
+    /**
+     * Loads list of image URLs from the page associated with the image in search results.
+     *
+     * @param position Position of an image in the list.
+     */
     public void loadImagesFromPage(final int position) {
         getViewState().showProgress();
         final String hostPageUrl = imageInfoList.get(position).contextLink;
@@ -129,14 +150,24 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
                 final String uriString = hostPageUrl.startsWith("http") ? hostPageUrl : "http://" + hostPageUrl;
                 final Uri uri = Uri.parse(uriString);
                 try {
+                    // load HTML code
                     final Document doc = Jsoup.connect(uri.toString()).get();
+
+                    // find img tags
                     final Elements images = doc.select("img");
+
+                    // create list of image URLs
                     List<String> results = new ArrayList<>(images.size());
                     for (Element image : images) {
+                        // get src attribute of img tag
                         String imageUrl = image.attr("src");
+
+                        // correct relative URLs
                         if (imageUrl.startsWith("/")) {
                             imageUrl = uri.getScheme() + "://" + uri.getHost() + imageUrl;
                         }
+
+                        // exclude the original image URL and validate it
                         if (!excludedImageUrl.equals(imageUrl) && Patterns.WEB_URL.matcher(imageUrl).matches()) {
                             results.add(imageUrl);
                         }
@@ -158,11 +189,14 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
                 getViewState().hideProgress();
                 List<String> imagesUrlList = results.first;
                 if (imagesUrlList == null) {
+                    // show error
                     getViewState().showError(results.second);
                 } else {
                     if (imagesUrlList.isEmpty()) {
+                        // image URL list is empty
                         getViewState().showError(R.string.error_nothing_found);
                     } else {
+                        // show found images
                         imageInfoList.get(position).setAssociatedImagesList(imagesUrlList);
                         getViewState().showResults(imageInfoList);
                     }

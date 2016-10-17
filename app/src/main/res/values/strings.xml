@@ -1,13 +1,17 @@
 <resources>
+    <!--App name-->
     <string name="app_name">ImageFinder</string>
 
+    <!--Common string values-->
     <string name="hint">Type keyword</string>
     <string name="search">Search</string>
-    <string name="ok">OK</string>
 
+    <!--Dialogs-->
+    <string name="ok">OK</string>
     <string name="error">Error</string>
     <string name="error_nothing_found">Nothing found</string>
     <string name="error_404">The page associated with the image not found (Error 404)</string>
 
+    <!--Content descriptions-->
     <string name="image">Image</string>
 </resources>

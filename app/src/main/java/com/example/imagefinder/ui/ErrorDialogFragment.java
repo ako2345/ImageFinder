@@ -8,6 +8,9 @@ import android.support.v7.app.AlertDialog;
 
 import com.example.imagefinder.R;
 
+/**
+ * Fragment for showing errors.
+ */
 public class ErrorDialogFragment extends DialogFragment {
 
     private static final String ARG_ERROR_MESSAGE = "args_error";

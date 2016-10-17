@@ -2,6 +2,9 @@ package com.example.imagefinder.mvp.model.gson;
 
 import java.util.List;
 
+/**
+ * Class that helps to parse search results from Bing.
+ */
 public class BingSearchResults {
     public List<Image> value;
 

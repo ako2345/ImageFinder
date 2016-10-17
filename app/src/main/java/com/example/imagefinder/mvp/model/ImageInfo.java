@@ -2,6 +2,9 @@ package com.example.imagefinder.mvp.model;
 
 import java.util.List;
 
+/**
+ * Class representing list of image search results.
+ */
 public class ImageInfo {
     public String thumbnailLink;
     public String contextLink;

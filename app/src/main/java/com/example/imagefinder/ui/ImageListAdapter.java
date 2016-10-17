@@ -17,13 +17,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Adapter for the list of search results.
+ */
 class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder> {
     List<ImageInfo> imageInfoList = new ArrayList<>();
     final OnItemClickListener listener;
     private final Picasso picasso;
 
     ImageListAdapter(Context context, OnItemClickListener listener) {
-
         this.picasso = Picasso.with(context);
         this.listener = listener;
     }
@@ -41,15 +43,24 @@ class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder>
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+        // get image info
         final ImageInfo imageInfo = imageInfoList.get(position);
-        final String imageUri = imageInfo.thumbnailLink;
+
+        // host page URI
         final String pageUri = imageInfo.contextLink;
-        final String dimensions = String.format(Locale.getDefault(), "%d x %d", imageInfo.width, imageInfo.height);
         holder.pageUri.setText(pageUri);
+
+        // image dimensions
+        final String dimensions = String.format(Locale.getDefault(), "%d x %d", imageInfo.width, imageInfo.height);
         holder.dimensions.setText(dimensions);
+
+        // image view
         holder.image.getLayoutParams().width = imageInfo.thumbnailWidth;
         holder.image.getLayoutParams().height = imageInfo.thumbnailHeight;
+        final String imageUri = imageInfo.thumbnailLink;
         picasso.load(imageUri).into(holder.image);
+
+        // associated images
         holder.associatedImages.removeAllViews();
         if (imageInfo.associatedImagesList != null && !imageInfo.associatedImagesList.isEmpty()) {
             for (String associatedImageUrl : imageInfo.associatedImagesList) {
@@ -68,6 +79,9 @@ class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder>
         return imageInfoList.size();
     }
 
+    /**
+     * View holder.
+     */
     class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         final TextView pageUri;
         final TextView dimensions;

@@ -22,6 +22,9 @@ import com.example.imagefinder.mvp.view.ImageListView;
 
 import java.util.List;
 
+/**
+ * Activity that displays list of search results.
+ */
 public class ImageListActivity extends MvpAppCompatActivity implements ImageListView {
     // constants
     private static final int LIST_VISIBLE_THRESHOLD = 7;
