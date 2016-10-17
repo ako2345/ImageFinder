@@ -24,6 +24,7 @@
             android:contentDescription="@string/image"
             android:minHeight="48dp"
             android:minWidth="48dp"
+            android:scaleType="center"
             tools:src="@mipmap/ic_launcher" />
 
         <LinearLayout

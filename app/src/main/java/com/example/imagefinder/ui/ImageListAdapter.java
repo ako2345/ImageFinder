@@ -55,7 +55,10 @@ class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder>
         holder.image.getLayoutParams().width = imageInfo.thumbnailWidth;
         holder.image.getLayoutParams().height = imageInfo.thumbnailHeight;
         final String imageUri = imageInfo.thumbnailLink;
-        Picasso.with(holder.image.getContext()).load(imageUri).into(holder.image);
+        Picasso.with(holder.image.getContext())
+                .load(imageUri)
+                .placeholder(R.drawable.ic_progress_animation)
+                .into(holder.image);
 
         // associated images
         holder.associatedImages.removeAllViews();
@@ -65,7 +68,10 @@ class ImageListAdapter extends RecyclerView.Adapter<ImageListAdapter.ViewHolder>
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                 lp.setMargins(0, 0, 0, 16);
                 imageView.setLayoutParams(lp);
-                Picasso.with(holder.associatedImages.getContext()).load(associatedImageUrl).into(imageView);
+                Picasso.with(holder.associatedImages.getContext())
+                        .load(associatedImageUrl)
+                        .placeholder(R.drawable.ic_progress_animation)
+                        .into(imageView);
                 holder.associatedImages.addView(imageView);
             }
         }
