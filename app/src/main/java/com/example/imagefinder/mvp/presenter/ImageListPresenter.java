@@ -3,6 +3,7 @@ package com.example.imagefinder.mvp.presenter;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
+import android.util.Pair;
 import android.util.Patterns;
 
 import com.arellomobile.mvp.InjectViewState;
@@ -15,6 +16,7 @@ import com.example.imagefinder.mvp.view.ImageListView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -117,12 +119,11 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
 
     public void loadImagesFromPage(final int position) {
         getViewState().showProgress();
-
-        String hostPageUrl = imageInfoList.get(position).contextLink;
-        String excludedImageUrl = imageInfoList.get(position).thumbnailLink;
-        new AsyncTask<String, Void, List<String>>() {
+        final String hostPageUrl = imageInfoList.get(position).contextLink;
+        final String excludedImageUrl = imageInfoList.get(position).thumbnailLink;
+        new AsyncTask<String, Void, Pair<List<String>, Integer>>() {
             @Override
-            protected List<String> doInBackground(String... strings) {
+            protected Pair<List<String>, Integer> doInBackground(String... strings) {
                 final String hostPageUrl = strings[0];
                 final String excludedImageUrl = strings[1];
                 final String uriString = hostPageUrl.startsWith("http") ? hostPageUrl : "http://" + hostPageUrl;
@@ -132,37 +133,37 @@ public class ImageListPresenter extends MvpPresenter<ImageListView> {
                     final Elements images = doc.select("img");
                     List<String> results = new ArrayList<>(images.size());
                     for (Element image : images) {
-                        if (image.attr("width").isEmpty() || image.attr("height").isEmpty()) {
-                            continue;
+                        String imageUrl = image.attr("src");
+                        if (imageUrl.startsWith("/")) {
+                            imageUrl = uri.getScheme() + "://" + uri.getHost() + imageUrl;
                         }
-                        final int width = Integer.parseInt(image.attr("width"));
-                        final int height = Integer.parseInt(image.attr("height"));
-                        if (width > 32 && height > 32) {
-                            String imageUrl = image.attr("src");
-                            if (imageUrl.startsWith("/")) {
-                                imageUrl = uri.getScheme() + "://" + uri.getHost() + imageUrl;
-                            }
-                            if (!excludedImageUrl.equals(imageUrl) && Patterns.WEB_URL.matcher(imageUrl).matches()) {
-                                results.add(imageUrl);
-                            }
+                        if (!excludedImageUrl.equals(imageUrl) && Patterns.WEB_URL.matcher(imageUrl).matches()) {
+                            results.add(imageUrl);
                         }
                     }
-                    return results;
+                    return new Pair<>(results, 0);
+                } catch (HttpStatusException e) {
+                    if (e.getStatusCode() == 404) {
+                        return new Pair<>(null, R.string.error_404);
+                    } else {
+                        return new Pair<>(null, R.string.error);
+                    }
                 } catch (IOException e) {
-                    return null;
+                    return new Pair<>(null, R.string.error);
                 }
             }
 
             @Override
-            protected void onPostExecute(List<String> strings) {
+            protected void onPostExecute(Pair<List<String>, Integer> results) {
                 getViewState().hideProgress();
-                if (strings == null) {
-                    getViewState().showError(R.string.error);
+                List<String> imagesUrlList = results.first;
+                if (imagesUrlList == null) {
+                    getViewState().showError(results.second);
                 } else {
-                    if (strings.isEmpty()) {
+                    if (imagesUrlList.isEmpty()) {
                         getViewState().showError(R.string.error_nothing_found);
                     } else {
-                        imageInfoList.get(position).setAssociatedImagesList(strings);
+                        imageInfoList.get(position).setAssociatedImagesList(imagesUrlList);
                         getViewState().showResults(imageInfoList);
                     }
                 }
